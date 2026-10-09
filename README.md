@@ -56,7 +56,6 @@ An end-to-end, multi-site enterprise network designed, configured, and simulated
 ## 🔐 Security Architecture & DMZ Enforcement
 
 1. **Cisco ASA Firewall Policy:**
-   * **Inside Zone (Security Level 100):** Full access to DMZ and WAN resources.
    * **DMZ Zone (Security Level 50):** Isolated hosting environment; accessible only via explicit stateful inspection and ACL policies.
    * **Outside / WAN Zone (Security Level 0):** Unreachable without explicit NAT/Firewall inspection rules.
 
