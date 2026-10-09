@@ -408,7 +408,8 @@ CCNA-Full-Project/
     ├── etherchannel-status.png
     ├── aaa-radius-test.png
     ├── dmz-connectivity.png
-    └── voip-test.png
+    └── voip-test-ring.png
+    └── voip-test-connect.png
 ```
 
 Rename or remove the example screenshot paths to match the files you actually upload.
