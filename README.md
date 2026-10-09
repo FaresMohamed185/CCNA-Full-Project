@@ -151,7 +151,7 @@ The intended gateway arrangement uses a virtual IP shared by two Layer 3 switche
 
 If the active switch becomes unavailable, the standby switch can take over the active gateway role, provided the HSRP configuration and relevant connectivity support the failover.
 
-### Example Configuration — VLAN 10
+### Configuration — VLAN 10
 
 **Primary switch:**
 
@@ -172,8 +172,6 @@ interface Vlan10
  standby 10 priority 100
 ```
 
-These commands are illustrative examples. The actual project configuration may use different HSRP priorities or group numbers.
-
 ### Verification Commands
 
 ```cisco
@@ -190,7 +188,7 @@ show ip interface brief
 
 The network uses **single-area OSPF (Area 0)** to exchange routes between configured routing devices. This supports connectivity between the HQ, the branch, and the networks advertised into OSPF.
 
-Example verification commands:
+verification commands:
 
 ```cisco
 show ip ospf neighbor
@@ -205,16 +203,13 @@ A neighbor state of `FULL` indicates that the OSPF adjacency has reached the ful
 
 A **Generic Routing Encapsulation (GRE)** tunnel provides a logical point-to-point interface between the configured tunnel endpoints. The tunnel uses an underlay path between its source and destination addresses.
 
-Example configuration template:
-
 ```cisco
 interface Tunnel0
- ip address <TUNNEL_IP> <TUNNEL_MASK>
- tunnel source <SOURCE_INTERFACE_OR_IP>
- tunnel destination <REMOTE_UNDERLAY_IP>
+ ip address 10.1.1.1 255.255.255.252
+ mtu 1476
+ tunnel source FastEthernet1/0
+ tunnel destination 100.57.19.3
 ```
-
-Replace the placeholders with the actual addresses and interface names from the project configuration.
 
 ### Verification Commands
 
@@ -222,7 +217,7 @@ Replace the placeholders with the actual addresses and interface names from the 
 show interfaces tunnel 0
 show ip interface brief
 show ip route
-ping <REMOTE_TUNNEL_IP>
+ping 10.1.1.2
 ```
 
 > **Security note:** GRE provides encapsulation, not encryption. The tunnel should not be described as encrypted unless a separate encryption mechanism, such as IPsec, is also configured.
@@ -253,20 +248,18 @@ ACLs define which traffic is permitted between the relevant zones. The intended 
 
 ### Verification
 
-Test the services from the intended source networks and confirm both permitted and denied traffic behaves as expected. For example, verify that the web server is reachable from authorized clients and that restricted traffic is blocked by the relevant firewall or ACL rules.
-
 ---
 
 ## 🔑 AAA and RADIUS Authentication
 
 The project includes **Authentication, Authorization, and Accounting (AAA)** with a centralized RADIUS server for administrative login authentication on the configured core switches.
 
-- **RADIUS Server:** `10.50.70.80`
 - **Server Network:** VLAN 70 — `10.50.70.0/24`
+- **RADIUS Server:** `10.50.70.80`
 - **Configured Network Devices:** Core and Secondary switches
 - **Management Access:** SSH
 
-### Example Configuration Template
+### Configuration Template
 
 ```cisco
 aaa new-model
@@ -274,9 +267,7 @@ radius-server host <RADIUS_SERVER_IP> key <SHARED_SECRET>
 aaa authentication login default group radius local
 ```
 
-Replace the placeholders with the values used in the actual configuration. The `local` method provides a fallback to the local username database if RADIUS authentication is unavailable, subject to the configured login method list and platform behavior.
-
-**Security recommendation:** Do not publish actual shared secrets, passwords, or other credentials in a public repository. Use placeholders in documentation and keep the real values in the Packet Tracer lab only as needed.
+**Security recommendation:** Do not publish actual shared secrets, passwords, or other credentials in a public repository. 
 
 ### Verification
 
@@ -289,10 +280,6 @@ Test SSH login with a valid RADIUS account, then verify the intended fallback be
 ### Centralized DHCP and DHCP Relay
 
 The central DHCP server provides dynamic IP address allocation to configured client VLANs.
-
-Layer 3 interfaces use `ip helper-address` to relay DHCP requests from remote VLANs to the central server. This enables clients to obtain addresses without placing a separate DHCP server in every VLAN.
-
-Example:
 
 ```cisco
 interface Vlan10
@@ -310,22 +297,37 @@ The helper address should point to the actual DHCP server, and the DHCP server m
 
 The project includes Cisco CME-based IP telephony with a dedicated **Voice VLAN 88**. IP phones receive network configuration and register with the configured call-control service. Extensions are configured for dialing between phones.
 
-Example CME configuration:
-
 ```cisco
+ip dhcp excluded-address 10.50.88.1 10.50.88.10
+
+ip dhcp pool phones
+ network 10.50.88.0 255.255.255.0
+ default-router 10.50.88.1
+ option 150 ip 172.16.90.22
+
 telephony-service
- max-ephones 20
- max-dn 20
- ip source-address <CME_SOURCE_IP> port 2000
- auto assign 1 to 10
+ max-ephones 10
+ max-dn 10
+ ip source-address 172.16.90.22 port 2000
 
 ephone-dn 1
  number 111
+
+ephone-dn 2
+ number 222
+
+ephone-dn 3
+ number 333
+
+ephone-dn 4
+ number 444
+
+ephone-dn 5
+ number 555
+
+ephone-dn 6
+ number 666
 ```
-
-This is an example, not a complete phone configuration. Use the actual CME source address, directory numbers, phone registrations, and DHCP voice settings from the final project.
-
----
 
 ## 🧪 Verification and Testing
 
@@ -360,8 +362,6 @@ show ip route
 show ip interface brief
 show access-lists
 ```
-
-Use these commands to collect screenshots or CLI output for the repository. Include only verification results that correspond to tests you have actually performed.
 
 ---
 
@@ -412,13 +412,11 @@ CCNA-Full-Project/
     └── voip-test-connect.png
 ```
 
-Rename or remove the example screenshot paths to match the files you actually upload.
-
 ---
 
 ## 👨‍💻 Author
 
-**Fares Mohamed**
+**Fares Salem**
 
 Computer Engineering & Systems Graduate
 
@@ -427,7 +425,4 @@ Computer Engineering & Systems Graduate
 - **LinkedIn:** [Fares Salem](https://www.linkedin.com/in/faresmohamed185/)
 
 ---
-
-⭐ If you find this project useful, feel free to explore the topology and configuration examples.
-
 *This project is a simulated learning environment built for hands-on practice with enterprise networking concepts. It is not a production deployment.*
