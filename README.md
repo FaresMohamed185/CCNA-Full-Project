@@ -1,87 +1,108 @@
 # 🚀 Enterprise Network Architecture & Security Implementation
 
-An end-to-end, multi-site enterprise network designed, configured, and simulated using **Cisco Packet Tracer**. This project connects the **Main HQ** with the **Giza Branch** through a redundant, high-availability, segmented, and secure network infrastructure.
+[![Packet Tracer](https://img.shields.io/badge/Cisco_Packet_Tracer-v8.2+-005073?style=for-the-badge&logo=cisco&logoColor=white)](https://www.netacad.com/)
+[![Networking](https://img.shields.io/badge/CCNA-Enterprise_Design-008080?style=for-the-badge)](https://www.cisco.com/)
+[![Security](https://img.shields.io/badge/Security-Cisco_ASA_5506--X-red?style=for-the-badge)](https://www.cisco.com/)
+
+An end-to-end, multi-site enterprise network designed, configured, and simulated using **Cisco Packet Tracer**. This project links the **Main HQ** with the **Giza Branch** (`BRANCH B`) through a redundant, high-availability, highly segmented, and secure network infrastructure.
 
 ---
 
-## 📌 Network Topology Overview
+## 📋 Table of Contents
+- [Project Overview](#-project-overview)
+- [Network Topology](#-network-topology)
+- [Technologies Implemented](#-technologies-implemented)
+- [VLAN & IP Addressing Scheme](#-vlan--ip-addressing-scheme)
+- [High Availability & HSRP Redundancy](#-high-availability--hsrp-redundancy)
+- [Routing & Site-to-Site GRE Tunnel](#-routing--site-to-site-gre-tunnel)
+- [Perimeter Security & DMZ Architecture](#-perimeter-security--dmz-architecture)
+- [Centralized AAA & RADIUS Authentication](#-centralized-aaa--radius-authentication)
+- [Core Services & IP Telephony (CME)](#-core-services--ip-telephony-cme)
+- [Verification & Proof of Concepts](#-verification--proof-of-concepts)
+- [How to Run the Project](#-how-to-run-the-project)
+- [Author](#-author)
 
+---
+
+## 📋 Project Overview
+
+This project simulates a fully functional multi-site enterprise network adhering to Cisco enterprise architecture standards. It implements a **Hierarchical Three-Tier Model (Core, Distribution, Access)** at HQ connected to a remote branch (**Giza Branch / BRANCH B**) over a simulated WAN.
+
+Key focus areas include **L2/L3 Redundancy (HSRP Active/Standby, LACP EtherChannel, SVI)**, **Perimeter Defense (Cisco ASA Firewall, Isolated DMZ)**, **Centralized Identity Control (RADIUS AAA Server)**, and **Unified Communications (Cisco CallManager Express VoIP)**.
+
+---
+
+## 🖧 Network Topology
+
+The network is logically and physically partitioned into specialized zones:
+- **Inside LAN (HQ Floors 1–3):** Departmental VLANs terminating on Core/Distribution L3 switches.
+- **Central Infrastructure Zone (Servers):** Dedicated VLAN 70 hosting DHCP, DNS, NTP, and RADIUS security servers.
+- **DMZ Zone:** Isolated zone behind the Cisco ASA Firewall holding external-facing Web, DNS, FTP, and Mail servers.
+- **Branch Office (Giza_BR):** Connected through a site-to-site GRE tunnel over WAN.
+
+📸 **Network Topology Diagram:**
 ![Network Topology](./topology.png)
 
-> **Note:** Upload your topology screenshot to the root directory of this repository and name it `topology.png` so it renders automatically above.
+---
+
+## ⚙️ Technologies Implemented
+
+| Domain | Technologies & Protocols | Description |
+| :--- | :--- | :--- |
+| **Architecture** | Three-Tier Model | Core Layer, Distribution Layer, and Access Layer hierarchy |
+| **IP Addressing** | VLSM (Classless IPv4) | Structured subnetting across HQ departments and branch subnets |
+| **L2 Switching** | VLANs, Trunking, LACP, SVI | Logical isolation, EtherChannel aggregation, and switch virtual interfaces |
+| **L3 Redundancy** | HSRP (Hot Standby Router Protocol) | Gateway redundancy between `CORE` (Active) and `Secondary` (Standby) |
+| **Routing & WAN** | Single-Area OSPF (Area 0) & GRE Tunnel | Dynamic IP routing and site-to-site WAN encapsulation |
+| **Security & DMZ** | Cisco ASA 5506-X, Stateful Firewall, DMZ | Perimeter defense with stateful packet inspection and security zones |
+| **Identity Control** | AAA with RADIUS Authentication | Centralized administrative user access control for Core infrastructure |
+| **Core Services** | Centralized DHCP Relay, DNS, NTP | Centralized dynamic address allocation, name resolution, and clock sync |
+| **Voice Over IP** | Cisco CME & Dedicated Voice VLAN 88 | IP Telephony with extension dialing across 7960 series IP phones |
 
 ---
 
-## 🎯 Key Project Objectives
+## 📐 VLAN & IP Addressing Scheme
 
-- **High Availability & L2/L3 Redundancy:** Elimination of single points of failure using **HSRP (First Hop Redundancy Protocol)**, **LACP EtherChannel**, and **Rapid PVST+**.
-- **Structured Subnetting & Segmentation:** Efficient IP distribution using **VLSM** with strict departmental **VLAN** separation.
-- **Perimeter & DMZ Security:** Multi-tiered defense using a **Cisco ASA 5506-X Firewall**, dedicated **DMZ isolation**, **Access Control Lists (ACLs)**, **SSH**, and **AAA / RADIUS** server authentication.
-- **Inter-Site Connectivity:** Dynamic IP routing across WAN via **OSPF** and encrypted **Site-to-Site GRE Tunneling**.
-- **Unified IP Services & Voice:** Centralized **DHCP Relay** (`ip helper-address`), **DNS**, **NTP**, DMZ-hosted application services (**Web, FTP, Email**), and **IP Telephony (Cisco CME)**.
+### **Main HQ Departmental VLANs (`10.50.0.0/16`)**
 
----
+| Floor | VLAN ID | Department / Name | Network Subnet | Virtual Gateway (VIP) | Active L3 Switch | Standby L3 Switch |
+| :---: | :---: | :--- | :--- | :---: | :---: | :---: |
+| **Floor 1** | **10** | Software Developers | `10.50.10.0/24` | `10.50.10.1` | `10.50.10.2` | `10.50.10.3` |
+| **Floor 1** | **20** | IT Department | `10.50.20.0/24` | `10.50.20.1` | `10.50.20.2` | `10.50.20.3` |
+| **Floor 2** | **30** | HR Department | `10.50.30.0/24` | `10.50.30.1` | `10.50.30.2` | `10.50.30.3` |
+| **Floor 2** | **40** | Finance Department | `10.50.40.0/24` | `10.50.40.1` | `10.50.40.2` | `10.50.40.3` |
+| **Floor 3** | **50** | Marketing Department | `10.50.50.0/24` | `10.50.50.1` | `10.50.50.2` | `10.50.50.3` |
+| **Floor 3** | **60** | Customer Support | `10.50.60.0/24` | `10.50.60.1` | `10.50.60.2` | `10.50.60.3` |
+| **Infra** | **70** | Central Servers | `10.50.70.0/24` | `10.50.70.1` | `10.50.70.2` | `10.50.70.3` |
+| **Voice** | **88** | IP Telephony (Voice) | `10.50.88.0/24` | `10.50.88.1` | `10.50.88.2` | `10.50.88.3` |
 
-## 🛠️ Implemented Technologies & Protocols
+### **DMZ Infrastructure (`192.168.100.0/24`)**
+- **ASA DMZ Gateway:** `192.168.100.1/24`
+- **DMZ-Web-Server:** `192.168.100.10`
+- **DMZ-DNS:** `192.168.100.11`
+- **DMZ-FTP:** `192.168.100.12`
+- **DMZ-Email:** `192.168.100.13`
 
-| Network Domain | Technologies & Protocols |
-| :--- | :--- |
-| **Network Architecture** | Hierarchical Three-Tier Model (Core, Distribution, Access) |
-| **IP Addressing** | VLSM (Variable Length Subnet Masking) & Structured IPv4 Addressing |
-| **Layer 2 Switching** | VLANs, 802.1Q Trunking, Inter-VLAN Routing, Rapid PVST+, LACP EtherChannel |
-| **Layer 3 & Redundancy** | HSRP Gateway Redundancy, Dynamic OSPF Routing, Site-to-Site GRE Tunnel |
-| **Core Network Services** | Centralized DHCP Server with Relay (`ip helper-address`), DNS, NTP Synchronization |
-| **Network Security** | Cisco ASA 5506-X Firewall, DMZ Segmentation, ACLs, SSH Management, AAA / RADIUS |
-| **DMZ Applications** | Web (HTTP/HTTPS), FTP, & Email Servers |
-| **IP Telephony & Edge** | Cisco CallManager Express (CME), Voice VLANs, Wireless Access Points (WAP) |
-
----
-
-## 📊 Network Segmentation & Services Overview
-
-### **Internal LAN & Infrastructure**
-* **Workstation VLANs:** Divided into dedicated VLANs for IT/Software, HR/Finance, and Sales/Operations.
-* **Voice VLAN:** Dedicated Voice VLAN configured with Quality of Service (QoS) priorities for IP Telephony via Cisco CME.
-* **Management & Native VLAN:** Secure SSH administration access and out-of-band device management.
-* **Central Infrastructure VLAN:** Centralized hosting for DHCP, DNS, NTP, and AAA / RADIUS security servers.
-
-### **DMZ Infrastructure (Demilitarized Zone)**
-* **Isolated DMZ Zone:** Placed behind the Cisco ASA Firewall interface to allow controlled external/internal access to critical application servers:
-  * **Web Server (HTTP/HTTPS)**
-  * **FTP Server**
-  * **Email Server**
+### **Giza Branch (`BRANCH B`) Subnet (`192.168.1.0/24`)**
+- **Branch Gateway (`Giza_BR`):** `192.168.1.1/24`
+- **Clients (`PC1`, `Laptop1`):** `192.168.1.2` – `192.168.1.3`
 
 ---
 
-## 🔐 Security Architecture & DMZ Enforcement
+## 🔄 High Availability & HSRP Redundancy
 
-1. **Cisco ASA Firewall Policy:**
-   * **DMZ Zone (Security Level 50):** Isolated hosting environment; accessible only via explicit stateful inspection and ACL policies.
-   * **Outside / WAN Zone (Security Level 0):** Unreachable without explicit NAT/Firewall inspection rules.
+HSRP Grouping is deployed across `CORE` and `Secondary` Layer 3 switches to ensure continuous gateway availability across all internal VLANs (10–88).
 
-2. **Centralized Identity Management (AAA / RADIUS):**
-   * Network admin authentication mapped to a centralized RADIUS server for encrypted AAA logging and SSH CLI access across routers and switches.
+```cisco
+! Active Core Switch Configuration Example (VLAN 10)
+interface Vlan10
+ ip address 10.50.10.2 255.255.255.0
+ standby 10 ip 10.50.10.1
+ standby 10 priority 110
+ standby 10 preempt
 
----
-
-## 🧪 Verification & Proof of Concept
-
-The simulation includes complete validation and testing:
-* ✅ **Inter-VLAN Connectivity:** Verified dynamic routing across Core and Distribution switches.
-* ✅ **HSRP Gateway Failover:** Tested active-to-standby failover by simulating primary interface down state.
-* ✅ **GRE Tunnel Routing:** Confirmed seamless end-to-end routing between HQ and Giza Branch over the WAN.
-* ✅ **DMZ Reachability:** Confirmed successful HTTP, FTP, and Mail protocol sessions from inside and outside hosts.
-* ✅ **IP Telephony Dialing:** Tested intra-site and inter-site call placement across extension numbers using Cisco CME.
-
----
-
-## 📂 Repository Structure
-
-```text
-├── README.md                 # Complete Project Documentation
-├── topology.png              # High-Resolution Network Diagram
-├── Enterprise_Network.pkt    # Cisco Packet Tracer Project File
-└── configs/                  # Saved Running Configurations
-    ├── Core_Switch.txt
-    ├── ASA_Firewall.txt
-    └── HQ_Router.txt
+! Standby Secondary Switch Configuration Example (VLAN 10)
+interface Vlan10
+ ip address 10.50.10.3 255.255.255.0
+ standby 10 ip 10.50.10.1
+ standby 10 priority 100
